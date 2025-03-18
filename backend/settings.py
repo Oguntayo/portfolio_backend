@@ -184,7 +184,6 @@
 #     'USE_SESSION_AUTH': False,
 # }
 
-
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -201,10 +200,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
-DEBUG = os.getenv("DEBUG", "True") == "True"
-
-# Ensure ALLOWED_HOSTS loads correctly
+DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+
 # Database Configuration (Railway PostgreSQL)
 DATABASES = {
     'default': {
@@ -226,11 +224,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    # Third-party apps
     'rest_framework',
-    'rest_framework.authtoken',  
+    'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
-    'drf_yasg',  
+    'drf_yasg',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -238,10 +235,9 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'social_django',
-
-    # Custom apps
+    'whitenoise.runserver_nostatic',  # Whitenoise for static file handling
     'api',
-    'user_account',  
+    'user_account',
     'blog',
     'contact',
     'projects',
@@ -251,6 +247,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -259,6 +256,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOW_CREDENTIALS = True
 
 # URL Configuration
 ROOT_URLCONF = 'backend.urls'
@@ -298,36 +299,34 @@ USE_I18N = True
 USE_TZ = True
 
 # Static & Media Files
-import os
-
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Add this line
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# **Authentication & User Model**
+# Authentication & User Model
 AUTH_USER_MODEL = "user_account.User"
-
 AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
     'social_core.backends.google.GoogleOAuth2',
 ]
+SITE_ID = 1
 
-SITE_ID = 1  
-
-# **Allauth Settings**
-ACCOUNT_LOGIN_METHODS = {"email"}  
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]  
+# Allauth Settings
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_SIGNUP_FIELDS = ["email", "password1", "password2"]
 ACCOUNT_EMAIL_VERIFICATION = "optional"
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None  
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_ADAPTER = "user_account.adapters.MyAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "user_account.adapters.MySocialAccountAdapter"
 
-# **JWT Authentication**
+# JWT Authentication
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -348,7 +347,7 @@ REST_USE_JWT = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
-# **Google OAuth**
+# Google OAuth
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 SOCIAL_AUTH_GOOGLE_REDIRECT_URI = "http://127.0.0.1:8000/google/callback/"
@@ -361,7 +360,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# **Swagger API Docs**
+# Swagger API Docs
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Bearer': {
@@ -373,4 +372,3 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': False,
 }
-CORS_ALLOW_ALL_ORIGINS = True
