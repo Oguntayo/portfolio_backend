@@ -1,0 +1,22 @@
+# SECURITY
+SECRET_KEY="django-insecure-your-secret-key"
+DEBUG=True  # Change to False in production
+
+# ALLOWED HOSTS
+ALLOWED_HOSTS="127.0.0.1,localhost"
+
+# DATABASE CONFIG (Railway PostgreSQL Example)
+DB_NAME="railway"
+DB_USER="postgres"
+DB_PASSWORD="your_database_password"
+DB_HOST="your_database_host"
+DB_PORT="your_database_port"
+DATABASE_URL="postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME"
+
+# JWT CONFIG
+ACCESS_TOKEN_LIFETIME=1  # Days
+REFRESH_TOKEN_LIFETIME=7  # Days
+
+# GOOGLE OAUTH (Optional)
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
