@@ -205,7 +205,6 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 # Ensure ALLOWED_HOSTS loads correctly
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-
 # Database Configuration (Railway PostgreSQL)
 DATABASES = {
     'default': {
