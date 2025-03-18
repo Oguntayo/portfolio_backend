@@ -298,7 +298,10 @@ USE_I18N = True
 USE_TZ = True
 
 # Static & Media Files
-STATIC_URL = 'static/'
+import os
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Add this line
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
