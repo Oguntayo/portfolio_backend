@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     # Custom apps
     'api',
     'user_account',  
-    #'blog',
+    'blog',
     'contact',
     'projects',
 ]
