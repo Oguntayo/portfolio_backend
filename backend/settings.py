@@ -237,7 +237,7 @@ INSTALLED_APPS = [
     'social_django',
     'whitenoise.runserver_nostatic',  # Whitenoise for static file handling
     'api',
-    'user_account',
+    #'user_account',
     'blog',
     'contact',
     'projects',
