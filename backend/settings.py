@@ -16,10 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-# Ensure ALLOWED_HOSTS loads correctly
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
-# Database Configuration (Supabase PostgreSQL)
+# Database Configuration (railway PostgreSQL)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -62,6 +61,7 @@ INSTALLED_APPS = [
 ]
 
 # Middleware
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -70,7 +70,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -128,18 +128,19 @@ AUTH_USER_MODEL = "user_account.User"
 AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
-    'social_core.backends.google.GoogleOAuth2',
-]
+]  # Removed social_core.backends.google.GoogleOAuth2
 
 SITE_ID = 1  
 
 # **Allauth Settings**
-ACCOUNT_LOGIN_METHODS = {"email"}  
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]  
-ACCOUNT_EMAIL_VERIFICATION = "optional"
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None  
-ACCOUNT_ADAPTER = "user_account.adapters.MyAccountAdapter"
-SOCIALACCOUNT_ADAPTER = "user_account.adapters.MySocialAccountAdapter"
+# ACCOUNT_ADAPTER = "user_account.adapters.MyAccountAdapter"
+# SOCIALACCOUNT_ADAPTER = "user_account.adapters.MySocialAccountAdapter"
+
+
+ACCOUNT_AUTHENTICATION_METHOD = "email" 
+ACCOUNT_SIGNUP_FIELDS = ["email", "password1", "password2"] 
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "email" 
+ACCOUNT_EMAIL_REQUIRED = True  
 
 # **JWT Authentication**
 REST_FRAMEWORK = {
@@ -165,7 +166,7 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 # **Google OAuth**
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-SOCIAL_AUTH_GOOGLE_REDIRECT_URI = "http://127.0.0.1:8000/google/callback/"
+SOCIAL_AUTH_GOOGLE_REDIRECT_URI = "localhost:5172"
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -189,4 +190,3 @@ SWAGGER_SETTINGS = {
 }
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
