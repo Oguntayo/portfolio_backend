@@ -183,7 +183,7 @@ class GoogleLoginView(SocialLoginView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs) 
         data = response.data  
-        print(data)
+        print("=========================",data)
         if "key" in data:
             print(f"Generated Auth Key: {data['key']}") 
 
