@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -30,7 +31,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
-from django.conf import settings
 class Profile(models.Model):
     """User profile model for storing additional user details"""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
