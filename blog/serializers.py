@@ -10,13 +10,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ["id", "blog", "author", "content", "parent", "total_likes", "created_at"]
 
-
 class BlogSerializer(serializers.ModelSerializer):
     """Serializer for Blog posts"""
-    author = serializers.ReadOnlyField(source="author.email")
+    author = serializers.ReadOnlyField(source="author.email")  # Do not expect author to be passed in
     comments = serializers.SerializerMethodField()
     total_likes = serializers.ReadOnlyField()
-    image = serializers.ImageField(required=False)  # ✅ Allow image upload
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Blog
@@ -25,6 +24,11 @@ class BlogSerializer(serializers.ModelSerializer):
     def get_comments(self, obj):
         """Retrieve related comments"""
         return CommentSerializer(obj.comments.all(), many=True).data
+
+    def create(self, validated_data):
+        """Override create method to assign the current user as author"""
+        validated_data['author'] = self.context['request'].user  # Set the author to the current authenticated user
+        return super().create(validated_data)
 
 class LikeSerializer(serializers.Serializer):
     """Serializer for liking/unliking a comment or blog post."""

@@ -9,16 +9,26 @@ from api.utils.response.response import success, error
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
 class BlogListCreateView(generics.ListCreateAPIView):
     """List all blogs (paginated) & create new blog posts"""
     queryset = Blog.objects.all().order_by("-created_at").prefetch_related("comments")
     serializer_class = BlogSerializer
     pagination_class = StandardResultsSetPagination  
+    parser_classes = [MultiPartParser, FormParser]  # Ensure the parsers are set for file uploads
 
     def get_permissions(self):
         if self.request.method == "POST":
             return [permissions.IsAuthenticated()]
         return []
+
+    def get_serializer_context(self):
+        """Override to pass request to serializer"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     """View, update, or delete a blog post"""
