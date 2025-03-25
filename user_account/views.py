@@ -180,11 +180,11 @@ class GoogleLoginView(SocialLoginView):
     client_class = OAuth2Client
     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
 
-    def get_response(self):
-        """Override response to return access & refresh tokens instead of session key"""
-        user = self.user
-        refresh = RefreshToken.for_user(user)
-        return self.get_response_serializer()({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        })
+    # def get_response(self):
+    #     """Override response to return access & refresh tokens instead of session key"""
+    #     user = self.user
+    #     refresh = RefreshToken.for_user(user)
+    #     return self.get_response_serializer()({
+    #         "refresh": str(refresh),
+    #         "access": str(refresh.access_token),
+    #     })
