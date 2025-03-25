@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'social_django',
-     'corsheaders',
+    'corsheaders',
+    'storages',  # Added storages for S3
     # Custom apps
     'api',
     'user_account',  
@@ -61,7 +62,6 @@ INSTALLED_APPS = [
 ]
 
 # Middleware
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -114,35 +114,47 @@ USE_TZ = True
 
 # Static & Media Files
 STATIC_URL = 'static/'
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Media Files (S3 Configuration)
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')  # Or your region
+AWS_DEFAULT_ACL = None  # Make sure the files are not public by default
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+AWS_S3_ADDRESSING_STYLE = "virtual"
+AWS_QUERYSTRING_AUTH = False  
 # Default primary key type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# **Authentication & User Model**
+# Authentication & User Model
 AUTH_USER_MODEL = "user_account.User"
 
 AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
-]  # Removed social_core.backends.google.GoogleOAuth2
+]
 
 SITE_ID = 1  
 
-# **Allauth Settings**
-# ACCOUNT_ADAPTER = "user_account.adapters.MyAccountAdapter"
-# SOCIALACCOUNT_ADAPTER = "user_account.adapters.MySocialAccountAdapter"
-
-
+# Allauth Settings
 ACCOUNT_AUTHENTICATION_METHOD = "email" 
 ACCOUNT_SIGNUP_FIELDS = ["email", "password1", "password2"] 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "email" 
 ACCOUNT_EMAIL_REQUIRED = True  
 
-# **JWT Authentication**
+# JWT Authentication
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -163,11 +175,10 @@ REST_USE_JWT = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_AUTO_SIGNUP = False
 
-# **Google OAuth**
+# Google OAuth
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 SOCIAL_AUTH_GOOGLE_REDIRECT_URI = "http://localhost:5173/auth"
-
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -179,7 +190,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# **Swagger API Docs**
+# Swagger API Docs
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Bearer': {
@@ -191,6 +202,8 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': False,
 }
+
+# CORS Settings
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True

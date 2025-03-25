@@ -67,11 +67,9 @@ urlpatterns = [
     path("blog/", include("blog.urls")), 
     path("projects/", include("projects.urls")), 
     path("contact/", include("contact.urls")), 
-    # ✅ Google OAuth Login
     path("google/login/", GoogleLoginView.as_view(), name="google-login"),
 
 
-    # ✅ Google OAuth2 URLs
     path("accounts/google/login/", oauth2_login, name="google_login"),
     path("accounts/google/login/callback/", oauth2_callback, name="google_callback"),
 
