@@ -8,7 +8,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["id", "blog", "author", "content", "parent", "total_likes", "created_at"]
+        fields = ["id", "author", "content", "parent", "total_likes", "created_at"]  # ❌ Removed `blog`
 
 class BlogSerializer(serializers.ModelSerializer):
     """Serializer for Blog posts"""

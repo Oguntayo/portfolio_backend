@@ -45,17 +45,23 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.user != instance.author:
             raise PermissionDenied("You can only delete your own posts")
         instance.delete()
-
 class CommentListCreateView(generics.ListCreateAPIView):
     """List all comments for a blog post & create new comments"""
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    pagination_class = StandardResultsSetPagination  # ✅ Paginate comments
+    pagination_class = StandardResultsSetPagination  
 
     def get_queryset(self):
         """Filter comments by blog"""
         blog_id = self.kwargs.get("blog_id")
         return Comment.objects.filter(blog_id=blog_id)
+
+    def perform_create(self, serializer):
+        """Automatically assign the blog based on the URL parameter"""
+        blog_id = self.kwargs.get("blog_id")
+        blog = get_object_or_404(Blog, id=blog_id)
+        serializer.save(blog=blog, author=self.request.user)
+
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .serializers import LikeSerializer
