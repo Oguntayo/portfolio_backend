@@ -175,7 +175,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {"access_type": "offline"},
         "OAUTH_PKCE_ENABLED": True,
         "ID_TOKEN_REQUIRED": True,  
-        "FETCH_USER_INFO": False,
+        "FETCH_USER_INFO": True,
     }
 }
 
