@@ -168,11 +168,13 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 SOCIAL_AUTH_GOOGLE_REDIRECT_URI = "http://localhost:5173/auth"
 
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["email", "profile"],
         "AUTH_PARAMS": {"access_type": "offline"},
         "OAUTH_PKCE_ENABLED": True,
+        "ID_TOKEN_REQUIRED": True,  
         "FETCH_USER_INFO": False,
     }
 }
