@@ -172,10 +172,19 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from django.conf import settings
-
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class GoogleLoginView(SocialLoginView):
-    """Google OAuth Login API"""
+    """Google OAuth Login API - Returns JWT Tokens"""
     adapter_class = GoogleOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  # Ensure this is set in settings.py
+    callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
+
+    def get_response(self):
+        """Override response to return access & refresh tokens instead of session key"""
+        user = self.user
+        refresh = RefreshToken.for_user(user)
+        return self.get_response_serializer()({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        })
