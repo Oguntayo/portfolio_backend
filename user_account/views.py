@@ -173,6 +173,8 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from django.conf import settings
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class GoogleLoginView(SocialLoginView):
     """Google OAuth Login API - Returns JWT Tokens"""
@@ -181,10 +183,20 @@ class GoogleLoginView(SocialLoginView):
     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs) 
-        data = response.data  
-        print("=========================",data)
-        if "key" in data:
-            print(f"Generated Auth Key: {data['key']}") 
+        response = super().post(request, *args, **kwargs)  # Handle normal login
+        user = self.user  # Get authenticated user
 
-        return response
+        if user:  # If login is successful
+            refresh = RefreshToken.for_user(user)  # Generate JWT tokens
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            # Return JWT instead of "key"
+            return Response({
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "email": user.email,
+                "username": user.username
+            })
+
+        return response  # If login failed, return normal response
