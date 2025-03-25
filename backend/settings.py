@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import warnings
+from rest_framework_simplejwt.tokens import AccessToken
 
 warnings.filterwarnings("ignore", category=UserWarning, module="allauth.account.app_settings")
 
@@ -151,13 +152,14 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=int(os.getenv("ACCESS_TOKEN_LIFETIME", 1))),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv("REFRESH_TOKEN_LIFETIME", 7))),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_TOKEN_CLASSES':('rest_framework_simplejwt.tokens.AccessToken')
+    "AUTH_TOKEN_CLASSES": [AccessToken],  
 }
 
 REST_USE_JWT = True
