@@ -181,10 +181,10 @@ class GoogleLoginView(SocialLoginView):
     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)  # Call the parent post method
-        data = response.data  # Extract the response data
-
+        response = super().post(request, *args, **kwargs) 
+        data = response.data  
+        print(data)
         if "key" in data:
-            print(f"Generated Auth Key: {data['key']}")  # Print the key in the backend logs
+            print(f"Generated Auth Key: {data['key']}") 
 
         return response
