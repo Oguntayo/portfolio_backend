@@ -27,6 +27,13 @@ from api.utils.response.response import success, error
 from .models import Profile
 from .serializers import ProfileSerializer
 from drf_yasg.utils import swagger_auto_schema
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 User = get_user_model()
 
@@ -90,7 +97,6 @@ class LoginView(APIView):
             user = serializer.validated_data["user"]
             return success("Login successful", data=serializer.validated_data["tokens"], status_code=200)
         
-        # ✅ Explicitly set 400 status on error
         return error("Login failed", errors={"error": "Invalid email or password"}, status_code=400)
 
 
@@ -168,12 +174,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
             serializer.save()
             return success("Profile updated successfully", data=serializer.data)
         return error("Profile update failed", errors=serializer.errors)
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from dj_rest_auth.registration.views import SocialLoginView
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+
 
 
 class GoogleLoginView(SocialLoginView):
@@ -183,20 +184,17 @@ class GoogleLoginView(SocialLoginView):
     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)  # Handle normal login
-        user = self.user  # Get authenticated user
+        response = super().post(request, *args, **kwargs)  
+        user = self.user 
 
-        if user:  # If login is successful
-            refresh = RefreshToken.for_user(user)  # Generate JWT tokens
+        if user: 
+            refresh = RefreshToken.for_user(user) 
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
-
-            # Return JWT instead of "key"
             return Response({
-                "access_token": access_token,
-                "refresh_token": refresh_token,
+                "access": access_token,
+                "refresh": refresh_token,
                 "email": user.email,
                 "username": user.username
             })
-
-        return response  # If login failed, return normal response
+        return response  

@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class CustomRegisterSerializer(RegisterSerializer):
-    username = None  # ✅ Remove username
+    username = None 
 
     def get_cleaned_data(self):
         return {
@@ -40,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'password', 'access', 'refresh']
-        extra_kwargs = {'password': {'write_only': True}}  # Hide password in response
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         """Create user & generate tokens"""
