@@ -84,17 +84,19 @@ class LikeCommentView(generics.GenericAPIView):
         return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
 
 class LikeBlogView(generics.GenericAPIView):
-    """View to like/unlike a blog post."""
-    serializer_class = LikeSerializer  # ✅ Fix Swagger Error
+    """View to like/unlike a blog post (like Twitter)."""
+    serializer_class = LikeSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, blog_id):
-        blog = Blog.objects.get(id=blog_id)
+        blog = get_object_or_404(Blog, id=blog_id)
         user = request.user
-        if user in blog.liked_by.all():
-            blog.liked_by.remove(user)
-            message = "Unliked blog post"
-        else:
-            blog.liked_by.add(user)
-            message = "Liked blog post"
+        liked = False
 
-        return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+        if blog.likes.filter(id=user.id).exists():
+            blog.likes.remove(user)
+        else:
+            blog.likes.add(user)
+            liked = True
+
+        return Response({"success": True, "liked": liked, "total_likes": blog.likes.count()}, status=status.HTTP_200_OK)
