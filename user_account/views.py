@@ -215,6 +215,15 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from social_django.utils import psa
+import requests
+from rest_framework.exceptions import NotFound
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class GoogleLoginView(SocialLoginView):
     """Google OAuth Login API - Returns JWT Tokens"""
@@ -229,16 +238,22 @@ class GoogleLoginView(SocialLoginView):
 
         # Verify the access token by calling Google API
         google_url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={access_token}"
-        
+
         try:
             google_response = requests.get(google_url)
             google_response.raise_for_status()
             google_user_info = google_response.json()
-            print(google_user_info)
 
-            # If access token is valid, fetch user data
-            user = self.get_or_create_user(google_user_info)
+            # Extract the email from the Google response
+            email = google_user_info.get("email")
 
+            if not email:
+                return Response({"error": "Email not found in Google response"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the user already exists
+            user = self.get_or_create_user(email)
+
+            # If the user exists or is created, generate the JWT tokens
             if user:
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
@@ -257,7 +272,13 @@ class GoogleLoginView(SocialLoginView):
                 "error": f"Google API request failed: {str(e)}"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_or_create_user(self, google_user_info):
-        # Logic to find or create a user based on Google user info
-        # You should extract user data (email, username, etc.) from google_user_info and create or fetch the user.
-        pass
+    def get_or_create_user(self, email):
+        # Try to get the user by email
+        user = User.objects.filter(email=email).first()
+        
+        if user:
+            return user  # Return existing user
+        else:
+            # If the user does not exist, create a new user
+            user = User.objects.create_user(email=email, password=None)  # Password can be set to None as we are not setting it for now
+            return user
