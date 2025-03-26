@@ -71,9 +71,12 @@ class GitHubStatsView(APIView):
         return Response({"error": "Failed to fetch GitHub data"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+from rest_framework.permissions import IsAuthenticated
+
 class ReviewListCreateView(generics.ListCreateAPIView):
     """Handles listing and creating reviews for a project"""
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]  # Ensure user is authenticated
 
     def get_queryset(self):
         """Filter reviews by project ID"""
@@ -81,5 +84,8 @@ class ReviewListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Attach the current user as the reviewer"""
-        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
-        serializer.save(reviewer=self.request.user, project=project)
+        if self.request.user.is_authenticated:  # Ensure the user is authenticated
+            project = get_object_or_404(Project, pk=self.kwargs["project_id"])
+            serializer.save(reviewer=self.request.user, project=project)
+        else:
+            raise PermissionDenied("You must be logged in to submit a review.")
