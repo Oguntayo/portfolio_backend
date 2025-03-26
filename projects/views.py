@@ -6,7 +6,7 @@ from django.db.models import F
 from .models import Project, Review
 from .serializers import ProjectSerializer, ReviewSerializer
 import requests
-
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class ProjectListCreateView(generics.ListCreateAPIView):
     """Handles listing all projects and creating new projects"""
@@ -14,6 +14,7 @@ class ProjectListCreateView(generics.ListCreateAPIView):
     serializer_class = ProjectSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["title", "technologies", "tags"]  # Enable search
+    parser_classes = [MultiPartParser, FormParser]  # Allow multipart (file) data
 
     def get_queryset(self):
         """Allow filtering by tag or technology used"""
@@ -28,6 +29,15 @@ class ProjectListCreateView(generics.ListCreateAPIView):
 
         return queryset
 
+    def perform_create(self, serializer):
+        """Create the project and handle image upload"""
+        # Save the project with the serializer
+        project = serializer.save()
+
+        # Handle the images after the project is created
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            ProjectImage.objects.create(project=project, image=image)
 
 class ProjectRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     """Handles retrieving, updating, and deleting a project"""
