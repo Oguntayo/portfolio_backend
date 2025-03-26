@@ -229,10 +229,12 @@ class GoogleLoginView(SocialLoginView):
 
         # Verify the access token by calling Google API
         google_url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={access_token}"
+        
         try:
             google_response = requests.get(google_url)
             google_response.raise_for_status()
             google_user_info = google_response.json()
+            print(google_user_info)
 
             # If access token is valid, fetch user data
             user = self.get_or_create_user(google_user_info)
