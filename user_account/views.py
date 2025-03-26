@@ -208,6 +208,13 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 # from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 # from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 # from django.conf import settings
+import requests
+from rest_framework.exceptions import NotFound
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+from social_django.utils import psa
 
 class GoogleLoginView(SocialLoginView):
     """Google OAuth Login API - Returns JWT Tokens"""
@@ -216,9 +223,19 @@ class GoogleLoginView(SocialLoginView):
     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
 
     def post(self, request, *args, **kwargs):
+        access_token = request.data.get("access_token")
+        if not access_token:
+            return Response({"error": "Missing access_token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify the access token by calling Google API
+        google_url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={access_token}"
         try:
-            response = super().post(request, *args, **kwargs)
-            user = self.user
+            google_response = requests.get(google_url)
+            google_response.raise_for_status()
+            google_user_info = google_response.json()
+
+            # If access token is valid, fetch user data
+            user = self.get_or_create_user(google_user_info)
 
             if user:
                 refresh = RefreshToken.for_user(user)
@@ -233,7 +250,12 @@ class GoogleLoginView(SocialLoginView):
             else:
                 raise NotFound("User not found after Google OAuth authentication")
 
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             return Response({
-                "error": str(e)
+                "error": f"Google API request failed: {str(e)}"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_or_create_user(self, google_user_info):
+        # Logic to find or create a user based on Google user info
+        # You should extract user data (email, username, etc.) from google_user_info and create or fetch the user.
+        pass
