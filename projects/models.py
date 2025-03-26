@@ -44,6 +44,7 @@ class ProjectImage(models.Model):
     """Model for storing multiple images for a project"""
     project = models.ForeignKey(Project, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="project_images/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Image for {self.project.title}"

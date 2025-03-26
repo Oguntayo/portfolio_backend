@@ -19,29 +19,39 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ["id", "reviewer", "comment", "rating", "created_at"]
 
+
 class ProjectSerializer(serializers.ModelSerializer):
     """Serializer for Project model"""
     views = serializers.IntegerField(read_only=True)
     claps = serializers.IntegerField(read_only=True)
-    images = ProjectImageSerializer(many=True)  # Make it writable for image uploads
-    reviews = ReviewSerializer(many=True, read_only=True)  # Nested reviews
-    average_rating = serializers.FloatField(read_only=True)  # Read-only field for avg rating
-    review_count = serializers.IntegerField(read_only=True)  # Read-only field for total reviews
+    image = serializers.ImageField(write_only=True, required=False)  # Accept image during creation
+    image_url = serializers.SerializerMethodField()  # Return image URL
 
     class Meta:
         model = Project
         fields = [
             "id", "title", "description", "technologies", "repository_link",
             "live_demo", "tags", "completion_date", "views", "claps",
-            "featured", "reviews", "average_rating", "review_count", "images",
+            "featured", "image", "image_url"
         ]
-        
+
+    def get_image_url(self, obj):
+        """Return the project's first image URL"""
+        image = obj.images.first()
+        return image.image.url if image else None
+    def validate_repository_link(self, value):
+        """Ensure repository link is from GitHub, GitLab, or Bitbucket"""
+        if not re.match(r"https?://(github\.com|gitlab\.com|bitbucket\.org)/", value):
+            raise serializers.ValidationError("Repository link must be a valid GitHub, GitLab, or Bitbucket URL.")
+        return value
+
     def create(self, validated_data):
-        images_data = validated_data.pop('images', [])
+        """Create a project and handle the image upload"""
+        image = validated_data.pop("image", None)
         project = Project.objects.create(**validated_data)
-        
-        # Create ProjectImage instances
-        for image_data in images_data:
-            ProjectImage.objects.create(project=project, **image_data)
-        
+
+        if image:
+            ProjectImage.objects.create(project=project, image=image)
+
         return project
+

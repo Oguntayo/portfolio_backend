@@ -6,38 +6,13 @@ from django.db.models import F
 from .models import Project, Review
 from .serializers import ProjectSerializer, ReviewSerializer
 import requests
-from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework import parsers 
 class ProjectListCreateView(generics.ListCreateAPIView):
     """Handles listing all projects and creating new projects"""
-    queryset = Project.objects.all().order_by("-completion_date")  # Latest first
+    queryset = Project.objects.all().order_by("-completion_date")
     serializer_class = ProjectSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ["title", "technologies", "tags"]  # Enable search
-    parser_classes = [MultiPartParser, FormParser]  # Allow multipart (file) data
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]  # Support file uploads
 
-    def get_queryset(self):
-        """Allow filtering by tag or technology used"""
-        queryset = super().get_queryset()
-        tag = self.request.query_params.get("tag")
-        tech = self.request.query_params.get("tech")
-
-        if tag:
-            queryset = queryset.filter(tags__icontains=tag)
-        if tech:
-            queryset = queryset.filter(technologies__icontains=tech)
-
-        return queryset
-
-    def perform_create(self, serializer):
-        """Create the project and handle image upload"""
-        # Save the project with the serializer
-        project = serializer.save()
-
-        # Handle the images after the project is created
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            ProjectImage.objects.create(project=project, image=image)
 
 class ProjectRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     """Handles retrieving, updating, and deleting a project"""
