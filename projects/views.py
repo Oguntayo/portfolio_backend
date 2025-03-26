@@ -85,6 +85,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         """Attach the current user as the reviewer"""
         if self.request.user.is_authenticated:  # Ensure the user is authenticated
+            print("======",self.request.user)
             project = get_object_or_404(Project, pk=self.kwargs["project_id"])
             serializer.save(reviewer=self.request.user, project=project)
         else:
