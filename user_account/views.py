@@ -177,6 +177,38 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 
 
+# class GoogleLoginView(SocialLoginView):
+#     """Google OAuth Login API - Returns JWT Tokens"""
+#     adapter_class = GoogleOAuth2Adapter
+#     client_class = OAuth2Client
+#     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
+
+#     def post(self, request, *args, **kwargs):
+#         response = super().post(request, *args, **kwargs)  
+#         user = self.user 
+
+#         if user: 
+#             refresh = RefreshToken.for_user(user) 
+#             access_token = str(refresh.access_token)
+#             refresh_token = str(refresh)
+#             return Response({
+#                 "access": access_token,
+#                 "refresh": refresh_token,
+#                 "email": user.email,
+#                 "username": user.username
+#             })
+#         return response  
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.exceptions import NotFound
+# from rest_framework import status
+# from rest_framework_simplejwt.tokens import RefreshToken
+# from social_django.utils import psa
+# from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+# from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+# from django.conf import settings
+
 class GoogleLoginView(SocialLoginView):
     """Google OAuth Login API - Returns JWT Tokens"""
     adapter_class = GoogleOAuth2Adapter
@@ -184,17 +216,24 @@ class GoogleLoginView(SocialLoginView):
     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)  
-        user = self.user 
+        try:
+            response = super().post(request, *args, **kwargs)
+            user = self.user
 
-        if user: 
-            refresh = RefreshToken.for_user(user) 
-            access_token = str(refresh.access_token)
-            refresh_token = str(refresh)
+            if user:
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
+                refresh_token = str(refresh)
+                return Response({
+                    "access": access_token,
+                    "refresh": refresh_token,
+                    "email": user.email,
+                    "username": user.username
+                })
+            else:
+                raise NotFound("User not found after Google OAuth authentication")
+
+        except Exception as e:
             return Response({
-                "access": access_token,
-                "refresh": refresh_token,
-                "email": user.email,
-                "username": user.username
-            })
-        return response  
+                "error": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
