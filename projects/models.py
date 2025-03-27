@@ -10,10 +10,10 @@ class Project(models.Model):
     title = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
-    technologies = models.JSONField(default=list)  # Store list of tech stacks
+    technologies = models.JSONField(default=list)  
     repository_link = models.URLField()
     live_demo = models.URLField(blank=True, null=True)
-    tags = models.JSONField(default=list)  # Categories (AI, Web App, etc.)
+    tags = models.JSONField(default=list)  
     completion_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -49,17 +49,17 @@ class ProjectImage(models.Model):
     def __str__(self):
         return f"Image for {self.project.title}"
 
-
 class Review(models.Model):
     """Model for project reviews/testimonials"""
     project = models.ForeignKey(Project, related_name="reviews", on_delete=models.CASCADE)
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to user
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  
     comment = models.TextField()
-    rating = models.PositiveIntegerField(default=5)  # 1 to 5 stars
+    rating = models.PositiveIntegerField(default=5) 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]  # Show newest reviews first
+        ordering = ["-created_at"] 
 
     def __str__(self):
-        return f"Review by {self.reviewer} on {self.project.title}"
+        reviewer_name = self.reviewer.username if self.reviewer else "Anonymous"
+        return f"Review by {reviewer_name} on {self.project.title}"

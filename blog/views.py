@@ -1,22 +1,22 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
-from .models import Blog, Comment
-from .serializers import BlogSerializer, CommentSerializer
-from .pagination import StandardResultsSetPagination
-from api.utils.response.response import success, error
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from rest_framework.parsers import MultiPartParser, FormParser
+from .models import Blog, Comment
+from .serializers import BlogSerializer, CommentSerializer, LikeSerializer
+from .pagination import StandardResultsSetPagination
+from api.utils.response.response import success, error
 
 class BlogListCreateView(generics.ListCreateAPIView):
     """List all blogs (paginated) & create new blog posts"""
     queryset = Blog.objects.all().order_by("-created_at").prefetch_related("comments")
     serializer_class = BlogSerializer
     pagination_class = StandardResultsSetPagination  
-    parser_classes = [MultiPartParser, FormParser]  # Ensure the parsers are set for file uploads
+    parser_classes = [MultiPartParser, FormParser] 
 
     def get_permissions(self):
         if self.request.method == "POST":
@@ -45,10 +45,11 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.user != instance.author:
             raise PermissionDenied("You can only delete your own posts")
         instance.delete()
+        
 class CommentListCreateView(generics.ListCreateAPIView):
     """List all comments for a blog post & create new comments"""
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     pagination_class = StandardResultsSetPagination  
 
     def get_queryset(self):
@@ -57,46 +58,49 @@ class CommentListCreateView(generics.ListCreateAPIView):
         return Comment.objects.filter(blog_id=blog_id)
 
     def perform_create(self, serializer):
-        """Automatically assign the blog based on the URL parameter"""
+        """Add the author if authenticated, else set to None (Anonymous)"""
         blog_id = self.kwargs.get("blog_id")
         blog = get_object_or_404(Blog, id=blog_id)
-        serializer.save(blog=blog, author=self.request.user)
 
-from rest_framework.response import Response
-from rest_framework import status, generics
-from .serializers import LikeSerializer
-from .models import Comment, Blog
-
+        author = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(blog=blog, author=author)
+        
 class LikeCommentView(generics.GenericAPIView):
     """View to like/unlike a comment."""
-    serializer_class = LikeSerializer  # ✅ Fix Swagger Error
+    serializer_class = LikeSerializer
 
     def post(self, request, comment_id):
-        comment = Comment.objects.get(id=comment_id)
-        user = request.user
-        if user in comment.liked_by.all():
-            comment.liked_by.remove(user)
-            message = "Unliked comment"
-        else:
-            comment.liked_by.add(user)
-            message = "Liked comment"
+        comment = get_object_or_404(Comment, id=comment_id)
+        user = request.user if request.user.is_authenticated else None  
 
-        return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+        if user:
+            if user in comment.likes.all():
+                comment.likes.remove(user)
+                message = "Unliked comment"
+            else:
+                comment.likes.add(user)
+                message = "Liked comment"
 
+            return Response({"success": True, "message": message, "total_likes": comment.total_likes()}, status=status.HTTP_200_OK)
+        return Response({"success": False, "message": "Login required to like comments."}, status=status.HTTP_401_UNAUTHORIZED)
+    
 class LikeBlogView(generics.GenericAPIView):
-    """View to like/unlike a blog post (like Twitter)."""
+    """View to like/unlike a blog post."""
     serializer_class = LikeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] 
 
     def post(self, request, blog_id):
         blog = get_object_or_404(Blog, id=blog_id)
-        user = request.user
-        liked = False
+        user = request.user if request.user.is_authenticated else None
 
-        if blog.likes.filter(id=user.id).exists():
-            blog.likes.remove(user)
-        else:
-            blog.likes.add(user)
-            liked = True
+        if user:
+            if blog.likes.filter(id=user.id).exists():
+                blog.likes.remove(user)
+                liked = False
+            else:
+                blog.likes.add(user)
+                liked = True
 
-        return Response({"success": True, "liked": liked, "total_likes": blog.likes.count()}, status=status.HTTP_200_OK)
+            return Response({"success": True, "liked": liked, "total_likes": blog.total_likes()}, status=status.HTTP_200_OK)
+
+        return Response({"success": False, "message": "Login required to like blog posts."}, status=status.HTTP_401_UNAUTHORIZED)

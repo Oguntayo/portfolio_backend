@@ -57,21 +57,26 @@ class GitHubStatsView(APIView):
 
 
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from .models import Review, Project
+from .serializers import ReviewSerializer
 
 class ReviewListCreateView(generics.ListCreateAPIView):
     """Handles listing and creating reviews for a project"""
     serializer_class = ReviewSerializer
-    # permission_classes = [IsAuthenticated]  # Ensure user is authenticated
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         """Filter reviews by project ID"""
         return Review.objects.filter(project_id=self.kwargs["project_id"])
 
     def perform_create(self, serializer):
-        """Attach the current user as the reviewer"""
-        if self.request.user.is_authenticated:  # Ensure the user is authenticated
-            print("======",self.request.user)
-            project = get_object_or_404(Project, pk=self.kwargs["project_id"])
-            serializer.save(reviewer=self.request.user, project=project)
-        else:
-            raise PermissionDenied("You must be logged in to submit a review.")
+        """Attach the current user as the reviewer, or set to anonymous"""
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
+
+        reviewer = self.request.user if self.request.user.is_authenticated else None
+
+        serializer.save(reviewer=reviewer, project=project)

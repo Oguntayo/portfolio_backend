@@ -28,7 +28,7 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]  # ✅ Newest comments first
+        ordering = ["-created_at"] 
 
     def __str__(self):
         return f"Comment by {self.author.email} on {self.blog.title}"
