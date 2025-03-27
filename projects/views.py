@@ -61,7 +61,7 @@ from rest_framework.permissions import IsAuthenticated
 class ReviewListCreateView(generics.ListCreateAPIView):
     """Handles listing and creating reviews for a project"""
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]  # Ensure user is authenticated
+    # permission_classes = [IsAuthenticated]  # Ensure user is authenticated
 
     def get_queryset(self):
         """Filter reviews by project ID"""
