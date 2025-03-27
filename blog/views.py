@@ -46,6 +46,7 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied("You can only delete your own posts")
         instance.delete()
         
+
 class CommentListCreateView(generics.ListCreateAPIView):
     """List all comments for a blog post & create new comments"""
     serializer_class = CommentSerializer
@@ -64,7 +65,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
         author = self.request.user if self.request.user.is_authenticated else None
         serializer.save(blog=blog, author=author)
-        
+
 class LikeCommentView(generics.GenericAPIView):
     """View to like/unlike a comment."""
     serializer_class = LikeSerializer
