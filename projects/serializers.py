@@ -13,7 +13,7 @@ class ProjectImageSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializer for handling project reviews/testimonials"""
-    reviewer = serializers.ReadOnlyField(source="reviewer.email")  # Show reviewer email instead of ID
+    reviewer = serializers.ReadOnlyField(source="reviewer.email")  
 
     class Meta:
         model = Review
@@ -24,8 +24,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     """Serializer for Project model"""
     views = serializers.IntegerField(read_only=True)
     claps = serializers.IntegerField(read_only=True)
-    image = serializers.ImageField(write_only=True, required=False)  # Accept image during creation
-    image_url = serializers.SerializerMethodField()  # Return image URL
+    image = serializers.ImageField(write_only=True, required=False) 
+    image_url = serializers.SerializerMethodField()  
 
     class Meta:
         model = Project

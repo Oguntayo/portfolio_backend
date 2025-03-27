@@ -6,7 +6,7 @@ from django.db.models import Avg
 User = get_user_model()
 
 class Project(models.Model):
-    """Project model to showcase portfolio work"""
+    """Projects model"""
     title = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
@@ -50,7 +50,7 @@ class ProjectImage(models.Model):
         return f"Image for {self.project.title}"
 
 class Review(models.Model):
-    """Model for project reviews/testimonials"""
+    """Model for project reviews"""
     project = models.ForeignKey(Project, related_name="reviews", on_delete=models.CASCADE)
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  
     comment = models.TextField()

@@ -1,17 +1,20 @@
-from rest_framework import generics, filters, status
+from rest_framework import generics, filters, status, parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from django.db.models import F
+from django.core.exceptions import PermissionDenied
+import requests
+
 from .models import Project, Review
 from .serializers import ProjectSerializer, ReviewSerializer
-import requests
-from rest_framework import parsers 
+
 class ProjectListCreateView(generics.ListCreateAPIView):
     """Handles listing all projects and creating new projects"""
     queryset = Project.objects.all().order_by("-completion_date")
     serializer_class = ProjectSerializer
-    parser_classes = [parsers.MultiPartParser, parsers.FormParser]  # Support file uploads
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]  
 
 
 class ProjectRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -24,7 +27,7 @@ class ProjectViewCountView(APIView):
     """Handles incrementing project view count"""
     def post(self, request, pk):
         project = get_object_or_404(Project, pk=pk)
-        project.views = F("views") + 1  # Increment views count
+        project.views = F("views") + 1  
         project.save(update_fields=["views"])
         return Response({"message": "View count updated"}, status=status.HTTP_200_OK)
 
@@ -33,7 +36,7 @@ class ProjectClapView(APIView):
     """Handles adding claps to a project"""
     def post(self, request, pk):
         project = get_object_or_404(Project, pk=pk)
-        project.claps = F("claps") + 1  # Increment claps
+        project.claps = F("claps") + 1  
         project.save(update_fields=["claps"])
         return Response({"message": "Clap added"}, status=status.HTTP_200_OK)
 
@@ -56,13 +59,6 @@ class GitHubStatsView(APIView):
         return Response({"error": "Failed to fetch GitHub data"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework.permissions import IsAuthenticated
-from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from .models import Review, Project
-from .serializers import ReviewSerializer
 
 class ReviewListCreateView(generics.ListCreateAPIView):
     """Handles listing and creating reviews for a project"""
