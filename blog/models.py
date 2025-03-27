@@ -14,9 +14,17 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
-    def total_likes(self):
-        """Returns total number of likes"""
-        return self.likes.count()
+    def total_likes(self, request=None):
+        """Returns total number of likes including session-based likes"""
+        user_likes_count = self.likes.count()
+
+        session_likes_count = 0
+        if request:
+            session_likes = request.session.get("liked_blogs", [])
+            if self.id in session_likes:
+                session_likes_count = 1  
+
+        return user_likes_count + session_likes_count
 
 class Comment(models.Model):
     """Comment model for blog posts"""

@@ -84,6 +84,7 @@ class LikeCommentView(generics.GenericAPIView):
             return Response({"success": True, "message": message, "total_likes": comment.total_likes()}, status=status.HTTP_200_OK)
         return Response({"success": False, "message": "Login required to like comments."}, status=status.HTTP_401_UNAUTHORIZED)
     
+
 class LikeBlogView(generics.GenericAPIView):
     """View to like/unlike a blog post."""
     serializer_class = LikeSerializer
@@ -104,3 +105,38 @@ class LikeBlogView(generics.GenericAPIView):
             return Response({"success": True, "liked": liked, "total_likes": blog.total_likes()}, status=status.HTTP_200_OK)
 
         return Response({"success": False, "message": "Login required to like blog posts."}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LikeBlogView(generics.GenericAPIView):
+    """View to like/unlike a blog post."""
+    serializer_class = LikeSerializer
+    permission_classes = [permissions.AllowAny] 
+
+    def post(self, request, blog_id):
+        blog = get_object_or_404(Blog, id=blog_id)
+        user = request.user if request.user.is_authenticated else None
+
+        if user:
+            if blog.likes.filter(id=user.id).exists():
+                blog.likes.remove(user)
+                liked = False
+            else:
+                blog.likes.add(user)
+                liked = True
+        else:
+            session = request.session
+            liked_blogs = session.get("liked_blogs", [])
+
+            if blog_id in liked_blogs:
+                liked_blogs.remove(blog_id) 
+                liked = False
+            else:
+                liked_blogs.append(blog_id)  
+                liked = True
+
+            session["liked_blogs"] = liked_blogs  
+            session.modified = True 
+
+        return Response(
+            {"success": True, "liked": liked, "total_likes": blog.total_likes(request)},
+            status=status.HTTP_200_OK,
+        )

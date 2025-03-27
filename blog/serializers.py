@@ -31,6 +31,7 @@ class BlogSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class LikeSerializer(serializers.Serializer):
-    """Serializer for liking/unliking a comment or blog post."""
+    """Serializer for liking/unliking a blog post."""
     success = serializers.BooleanField()
-    message = serializers.CharField()
+    liked = serializers.BooleanField()
+    total_likes = serializers.IntegerField()
