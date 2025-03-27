@@ -211,6 +211,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 SESSION_COOKIE_AGE = 86400  # a day
 SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Store sessions in DB
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # Change to True in production (HTTPS)
+SESSION_COOKIE_SECURE = True  # Change to True in production (HTTPS)
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
