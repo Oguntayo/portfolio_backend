@@ -14,6 +14,6 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ("created_at",)
 
     def get_total_likes(self, obj):
-        return obj.total_likes()
+        return obj.likes.count()
     
     get_total_likes.short_description = "Total Likes" 
