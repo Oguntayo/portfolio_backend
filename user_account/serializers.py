@@ -62,7 +62,7 @@ class LoginSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
 
-        user = authenticate(email=email, password=password)  # Authenticate with email
+        user = authenticate(email=email, password=password) 
         if not user:
             raise serializers.ValidationError("Invalid email or password")
 
@@ -87,7 +87,7 @@ class LogoutSerializer(serializers.Serializer):
         """Blacklist the refresh token"""
         try:
             refresh_token = RefreshToken(data["refresh"])
-            refresh_token.blacklist()  # Blacklist token so it can't be used again
+            refresh_token.blacklist() 
         except Exception as e:
             raise serializers.ValidationError("Invalid refresh token")
 
@@ -95,8 +95,8 @@ class LogoutSerializer(serializers.Serializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile"""
-    email = serializers.ReadOnlyField(source="user.email")  # Show email but make it read-only
-    profile_picture = serializers.ImageField(required=False)  # Allow image upload
+    email = serializers.ReadOnlyField(source="user.email") 
+    profile_picture = serializers.ImageField(required=False) 
 
     class Meta:
         model = Profile
@@ -108,7 +108,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.website = validated_data.get("website", instance.website)
         instance.twitter = validated_data.get("twitter", instance.twitter)
 
-        # Only update profile picture if provided
         if "profile_picture" in validated_data:
             instance.profile_picture = validated_data["profile_picture"]
 

@@ -1,38 +1,23 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from api.utils.response.response import success, error
-from .serializers import UserSerializer, LoginSerializer,LogoutSerializer
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from api.utils.response.response import success, error
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from rest_framework import generics, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import generics
 from api.utils.response.response import success, error
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import generics, permissions
-from rest_framework.response import Response
-from api.utils.response.response import success, error
+from .serializers import UserSerializer, LoginSerializer, LogoutSerializer, ProfileSerializer
 from .models import Profile
-from .serializers import ProfileSerializer
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from social_django.utils import psa
+import requests
+
 
 
 User = get_user_model()
@@ -175,56 +160,6 @@ class ProfileView(generics.RetrieveUpdateAPIView):
             return success("Profile updated successfully", data=serializer.data)
         return error("Profile update failed", errors=serializer.errors)
 
-
-
-# class GoogleLoginView(SocialLoginView):
-#     """Google OAuth Login API - Returns JWT Tokens"""
-#     adapter_class = GoogleOAuth2Adapter
-#     client_class = OAuth2Client
-#     callback_url = settings.SOCIAL_AUTH_GOOGLE_REDIRECT_URI  
-
-#     def post(self, request, *args, **kwargs):
-#         response = super().post(request, *args, **kwargs)  
-#         user = self.user 
-
-#         if user: 
-#             refresh = RefreshToken.for_user(user) 
-#             access_token = str(refresh.access_token)
-#             refresh_token = str(refresh)
-#             return Response({
-#                 "access": access_token,
-#                 "refresh": refresh_token,
-#                 "email": user.email,
-#                 "username": user.username
-#             })
-#         return response  
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.exceptions import NotFound
-# from rest_framework import status
-# from rest_framework_simplejwt.tokens import RefreshToken
-# from social_django.utils import psa
-# from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-# from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-# from django.conf import settings
-import requests
-from rest_framework.exceptions import NotFound
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
-from social_django.utils import psa
-import requests
-from rest_framework.exceptions import NotFound
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
 class GoogleLoginView(SocialLoginView):
     """Google OAuth Login API - Returns JWT Tokens"""
     adapter_class = GoogleOAuth2Adapter
@@ -236,7 +171,6 @@ class GoogleLoginView(SocialLoginView):
         if not access_token:
             return Response({"error": "Missing access_token"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Verify the access token by calling Google API
         google_url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={access_token}"
 
         try:
@@ -244,16 +178,13 @@ class GoogleLoginView(SocialLoginView):
             google_response.raise_for_status()
             google_user_info = google_response.json()
 
-            # Extract the email from the Google response
             email = google_user_info.get("email")
 
             if not email:
                 return Response({"error": "Email not found in Google response"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if the user already exists
             user = self.get_or_create_user(email)
 
-            # If the user exists or is created, generate the JWT tokens
             if user:
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
@@ -273,12 +204,10 @@ class GoogleLoginView(SocialLoginView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
     def get_or_create_user(self, email):
-        # Try to get the user by email
         user = User.objects.filter(email=email).first()
         
         if user:
-            return user  # Return existing user
+            return user 
         else:
-            # If the user does not exist, create a new user
-            user = User.objects.create_user(email=email, password=None)  # Password can be set to None as we are not setting it for now
+            user = User.objects.create_user(email=email, password=None)  
             return user

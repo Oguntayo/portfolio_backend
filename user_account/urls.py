@@ -7,7 +7,7 @@ def dummy_signup_view(request):
     return HttpResponse("Signup not allowed.", status=403)
 
 urlpatterns = [
-    path("accounts/social/signup/", dummy_signup_view, name="socialaccount_signup"),  # Prevents NoReverseMatch
+    path("accounts/social/signup/", dummy_signup_view, name="socialaccount_signup"),  # fixed NoReverseMatch
 ]
 
 urlpatterns = [

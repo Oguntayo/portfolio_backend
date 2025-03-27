@@ -23,8 +23,6 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
     )
-
-# Register User model with custom admin
 admin.site.register(User, CustomUserAdmin)
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -32,5 +30,4 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "bio", "website", "twitter")
     search_fields = ("user__email",)
 
-# Register Profile model
 admin.site.register(Profile, ProfileAdmin)
