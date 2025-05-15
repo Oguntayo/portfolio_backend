@@ -21,7 +21,7 @@ class ContactMessageListView(generics.ListAPIView):
     """Admin-only view to list all contact messages"""
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
-    permission_classes = [IsAdminUser]  # Only admin can view all messages
+    permission_classes = [IsAdminUser] 
 
 class ContactMessageRetrieveView(generics.RetrieveAPIView):
     """Admin-only view to retrieve a single contact message"""

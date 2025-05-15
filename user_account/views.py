@@ -116,14 +116,14 @@ class LogoutView(APIView):
     )
     def post(self, request):
         """Automatically extract and blacklist the refresh token"""
-        refresh_token = request.data.get("refresh")  # Get refresh token from request body
+        refresh_token = request.data.get("refresh") 
 
         if not refresh_token:
             return error("No refresh token provided", errors={"error": "Refresh token is required"}, status_code=400)
 
         try:
-            token = RefreshToken(refresh_token)  # Convert string to RefreshToken object
-            token.blacklist()  # Blacklist the refresh token
+            token = RefreshToken(refresh_token) 
+            token.blacklist() 
             
             return success("Logout successful", data={}, status_code=200)
 

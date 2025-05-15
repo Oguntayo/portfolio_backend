@@ -18,7 +18,7 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
-# Database Configuration (railway PostgreSQL)
+# Database Configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'social_django',
     'corsheaders',
-    'storages',  # Added storages for S3
+    'storages',  
     # Custom apps
     'api',
     'user_account',  
@@ -120,12 +120,12 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Media Files (S3 Configuration)
+# Media Files 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')  # Or your region
-AWS_DEFAULT_ACL = None  # Make sure the files are not public by default
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')  
+AWS_DEFAULT_ACL = None  
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
@@ -207,10 +207,10 @@ SWAGGER_SETTINGS = {
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
-#session because of anonymous 
+
 SESSION_COOKIE_AGE = 86400  # a day
-SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Store sessions in DB
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True  # Change to True in production (HTTPS)
+SESSION_COOKIE_SECURE = True  
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
